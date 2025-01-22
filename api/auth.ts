@@ -1,39 +1,77 @@
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-export async function login(username: string, password: string) {
+export async function login(user_name: string, password: string) {
+  try {
     const res = await fetch(`${API_URL}/manage/login`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'            
+      },
+      body: JSON.stringify({ user_name, password }),        
     });
-
+  
     const data = await res.json();
+    
     if (!res.ok) {
-        console.log(data);
-        throw Error("failed to login");
+      throw new Error(data.error || `Authentication failed`);
     }
-    return data;
+    
+    return data;  // This will contain {message: "Success!"}
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error;
+  }
 }
 
 
-export async function register(name:string, email:string, phoneNumber:number) {
-  const res = await fetch(`${API_URL}/manage/register`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ name, email, phoneNumber }),
-  });
+export async function register(name: string, email: string, phone_number: string) {
+  try {
+    const res = await fetch(`${API_URL}/manage/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name, email, phone_number }),
+    });
 
-  const data = await res.json();
-  if (!res.ok) {
-    console.log(data);
-    throw Error('Failed to signup');
+    const data = await res.json();
+    
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to register');
+    }
+
+    // Return the data as is from the API
+    return {
+      message: data.message,
+      AgentCode: data.AgentCode,
+      temporaryPassword: data.temporaryPassword
+    };
+  } catch (error) {
+    console.error('Registration Error:', error);
+    throw error;
   }
-  return data;
+}
 
 
-
+export async function changePassword(user_name: string, oldPassword: string, newPassword: string) {
+  try {
+    const res = await fetch(`${API_URL}/manage/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'            
+      },
+      body: JSON.stringify({ user_name, oldPassword, newPassword }),        
+    });
+  
+    const data = await res.json();
+    
+    if (!res.ok) {
+      throw new Error(data.error || `Authentication failed`);
+    }
+    
+    return data;  // This will contain {message: "Success!"}
+  } catch (error) {
+    console.error('Change Password error:', error);
+    throw error;
+  }
 }

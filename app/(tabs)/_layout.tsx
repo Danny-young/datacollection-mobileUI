@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 
 import { Colors } from '@/constants/Colors';
@@ -41,7 +42,7 @@ export default function TabLayout() {
         name="userprofile"
         options={{
           title: 'user',
-          tabBarIcon: ({ color, focused }) => <Ionicons name={focused? 'settings' :'settings-outline'} size={28} color={color} />,
+          tabBarIcon: ({ color, focused }) => <FontAwesome name={focused ? 'user-circle-o' : 'user-circle'} size={28} color={color} />,
         }}/>
       </Tabs>
   );

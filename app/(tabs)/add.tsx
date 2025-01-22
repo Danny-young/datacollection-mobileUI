@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Platform, View, ScrollView, TouchableOpacity } from 'react-native';
+import { Image, StyleSheet, Platform, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import React, { useRef, useState } from 'react';
 import {
   Button,
@@ -46,6 +46,8 @@ import * as Location from 'expo-location';
 //import { MapPin } from 'lucide-react-native';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { Alert,  AlertIcon, AlertText } from '@/components/ui/alert';
+import { Icon } from '@/components/ui/icon';
+import { SaveIcon, MapPinIcon } from 'lucide-react-native';
 
 
 
@@ -54,6 +56,7 @@ export default function add() {
 
  console.log(fetchLocations)
   const [formData, setFormData] = useState({
+    agentCode:'AG038',
     firstName: '',
     lastName: '',
     nationality: 'Ghanaian', // Default value
@@ -108,6 +111,15 @@ export default function add() {
       queryFn: fetchLocations
     });
 
+
+    if(isLoading){
+      <ActivityIndicator/>
+    }
+
+
+    if(error){
+      console.log('message:',error)
+    }
      // Query for localities based on selected municipality
   const { data: localities,} = useQuery({
     queryKey: ['localities', formData.electoralArea],
@@ -151,392 +163,646 @@ console.log(municipalities);
     <ScrollView className='flex-1 w-full'>
      <FormControl className="border rounded-lg border-outline-300">
 
-<View className="max-w mx-auto space-y-4">
-<Card size="sm" variant="ghost" className="">
-  <Heading size="md" className="text-center font-extrabold">
+<View className="">
+<Card 
+  size="sm" 
+  style={{
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginBottom: 16
+  }}
+>
+  <Heading 
+    size="md" 
+    style={{ 
+      color: '#1E293B',
+      fontSize: 18,
+      fontWeight: '800',
+      textAlign: 'center',
+      marginBottom: 2
+    }}
+  >
     DATA COLLECTION
   </Heading>
-  
 </Card>
-<Card size="sm" variant="filled" className="">
-  <Heading size="md" className="mb-1">
+
+<Card 
+  size="sm" 
+  style={{
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3
+  }}
+>
+  <Heading 
+    size="md" 
+    style={{ 
+      color: '#1E293B',
+      marginBottom: 20,
+      fontSize: 18,
+      fontWeight: '700'
+    }}
+  >
     Personal Information
   </Heading>
 
-<HStack className='flex gap-2 mb-1'>
-<VStack className="flex-1">
+  <VStack space="lg">
+    <HStack space="md" style={{ alignItems: 'flex-start' }}>
+      <VStack style={{ flex: 1, gap: 8 }}>
         <FormControlLabel>
-          <FormControlLabelText className="text-typography-500">Surname</FormControlLabelText>
+          <FormControlLabelText style={{ color: '#334155', fontSize: 16, fontWeight: '600', marginBottom: 2 }}>
+            Surname
+          </FormControlLabelText>
         </FormControlLabel>
-        <Input className=""
-        size="xl">
+        <Input
+          style={{ 
+            borderColor: '#CBD5E1',
+            borderWidth: 1,
+            borderRadius: 8,
+            backgroundColor: '#F8FAFC',
+            height: 39
+          }}
+        >
           <InputField
-          value={formData.lastName}
-          onChangeText={(text: string) => setFormData(prev => ({...prev, lastName: text}))}
-
+            value={formData.lastName}
+            onChangeText={(text: string) => setFormData(prev => ({...prev, lastName: text}))}
+            style={{ fontSize: 16, color: '#334155', paddingLeft: 12 }}
           />
         </Input>      
- </VStack>     
-<VStack className="flex-1">
+      </VStack>     
+      
+      <VStack style={{ flex: 1, gap: 8 }}>
         <FormControlLabel>
-          <FormControlLabelText className="text-typography-500">FirstName</FormControlLabelText>
+          <FormControlLabelText style={{ color: '#334155', fontSize: 16, fontWeight: '600' }}>
+            FirstName
+          </FormControlLabelText>
         </FormControlLabel>
-        <Input className=""
-         size="xl"
-         isInvalid={!!(submitAttempted && errors.firstName)}
-         >
-         <InputField
-           value={formData.firstName}
-           onChangeText={(text: string) => setFormData(prev => ({...prev, firstName: text}))}
+        <Input
+          style={{ 
+            borderColor: submitAttempted && errors.firstName ? '#EF4444' : '#CBD5E1',
+            borderWidth: 1,
+            borderRadius: 8,
+            backgroundColor: '#F8FAFC',
+            height: 39
+          }}
+        >
+          <InputField
+            value={formData.firstName}
+            onChangeText={(text: string) => setFormData(prev => ({...prev, firstName: text}))}
+            style={{ fontSize: 16, color: '#334155', paddingLeft: 12 }}
           />
         </Input>      
- </VStack> 
- </HStack>    
-<HStack className='flex gap-2 mb-1'>
-<VStack className="flex-1">
-  <FormControlLabel>
-    <FormControlLabelText className="text-typography-500">Phone No.</FormControlLabelText>
-  </FormControlLabel>
-  <Input
-    size="xl"
-    isInvalid={!!(submitAttempted && errors.telephone)}
-  >
-    <InputField
-      value={formData.telephone}
-      onChangeText={(text: string) => {
-        const numberPart = text.replace('+233', '');
-        if (numberPart.length <= 9 && /^\d*$/.test(numberPart)) {
-          setFormData((prev) => ({ ...prev, telephone: '+233' + numberPart }));
-        }
-      }}
-      placeholder="+233XXXXXXXXX"
-      keyboardType="number-pad"
-    />
-  </Input>
-  {submitAttempted && errors.telephone && (
-    <Text className="text-error">{errors.telephone}</Text>
-  )}
-</VStack>
+      </VStack> 
+    </HStack>    
 
-<VStack className="flex-1">
-  <FormControlLabel>
-    <FormControlLabelText className="text-typography-500">Nationality</FormControlLabelText>
-  </FormControlLabel>
-  <Input size="xl" isDisabled={true}>
-    <InputField value={formData.nationality} editable={false} />
-  </Input>
-</VStack>
- </HStack>  
-
- <HStack className='flex gap-2 mb-1'>
-     <VStack className="flex-1 mb-1">
-      <FormControl isInvalid={!!(submitAttempted && errors.idType)}>
+    <HStack space="md" style={{ alignItems: 'flex-start' }}>
+      <VStack style={{ flex: 1, gap: 8 }}>
         <FormControlLabel>
-          <FormControlLabelText className="text-typography-500">ID Type*:</FormControlLabelText>
+          <FormControlLabelText style={{ color: '#334155', fontSize: 16, fontWeight: '600', marginBottom: 2 }}>
+            Phone No.
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{ 
+            borderColor: submitAttempted && errors.telephone ? '#EF4444' : '#CBD5E1',
+            borderWidth: 1,
+            borderRadius: 8,
+            backgroundColor: '#F8FAFC',
+            height: 40
+          }}
+        >
+          <InputField
+            value={formData.telephone}
+            onChangeText={(text: string) => {
+              const numberPart = text.replace('+233', '');
+              if (numberPart.length <= 9 && /^\d*$/.test(numberPart)) {
+                setFormData((prev) => ({ ...prev, telephone: '+233' + numberPart }));
+              }
+            }}
+            placeholder="+233XXXXXXXXX"
+            keyboardType="number-pad"
+            style={{ fontSize: 16, color: '#334155', paddingLeft: 12 }}
+          />
+        </Input>
+        {submitAttempted && errors.telephone && (
+          <Text style={{ color: '#EF4444', fontSize: 14 }}>{errors.telephone}</Text>
+        )}
+      </VStack>
+
+      <VStack style={{ flex: 1, gap: 8 }}>
+        <FormControlLabel>
+          <FormControlLabelText style={{ color: '#334155', fontSize: 16, fontWeight: '600', marginBottom: 2 }}>
+            Nationality
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{ 
+            borderColor: '#CBD5E1',
+            borderWidth: 1,
+            borderRadius: 8,
+            backgroundColor: '#F1F5F9',
+            height: 40
+          }}
+          isDisabled
+        >
+          <InputField 
+            value={formData.nationality} 
+            editable={false}
+            style={{ fontSize: 16, color: '#64748B', paddingLeft: 12 }}
+          />
+        </Input>
+      </VStack>
+    </HStack>  
+
+    <HStack space="md" style={{ alignItems: 'flex-start' }}>
+      <VStack style={{ flex: 1, gap: 8 }}>
+        <FormControlLabel>
+          <FormControlLabelText style={{ color: '#334155', fontSize: 16, fontWeight: '600', marginBottom: 2 }}>
+            ID Type*
+          </FormControlLabelText>
         </FormControlLabel>
         <Select
           onValueChange={(value) => {
             setFormData((prev) => ({ ...prev, idType: value }));
           }}
         >
-          <SelectTrigger>
+          <SelectTrigger
+            style={{ 
+              borderColor: submitAttempted && errors.idType ? '#EF4444' : '#CBD5E1',
+              borderWidth: 1,
+              borderRadius: 8,
+              backgroundColor: '#F8FAFC',
+              height: 40
+            }}
+          >
             <SelectInput
-              size='xl'
               placeholder="Select ID Type"
-              className="flex-1 w-[600px]"
               value={formData.idType}
+              style={{ fontSize: 16, color: '#334155', paddingLeft: 12 }}
             />
           </SelectTrigger>
           <SelectPortal>
             <SelectBackdrop />
             <SelectContent>
-              <SelectDragIndicatorWrapper>
-                <SelectDragIndicator />
-              </SelectDragIndicatorWrapper>
-              <SelectItem
-                label="Ghana Card"
-                value="Ghana Card"
-              />
-              <SelectItem
-                label="Passport"
-                value="passport"
-              />
-              <SelectItem
-                label="Driver's License"
-                value="Driver's License"
-              />
+              <SelectItem label="Ghana Card" value="Ghana Card" />
+              <SelectItem label="Passport" value="passport" />
+              <SelectItem label="Driver's License" value="Driver's License" />
             </SelectContent>
           </SelectPortal>
         </Select>
         {submitAttempted && errors.idType && (
-          <FormControlError>
-            <Text className="text-error">{errors.idType}</Text>
-          </FormControlError>
+          <Text style={{ color: '#EF4444', fontSize: 14 }}>{errors.idType}</Text>
         )}
-      </FormControl>
-    </VStack>
+      </VStack>
 
-    <VStack className="flex-1 mb-2">
-  <FormControl isInvalid={!!(submitAttempted && errors.idNumber)}>
-    <FormControlLabel>
-      <FormControlLabelText className="text-typography-500">ID Number*</FormControlLabelText>
-    </FormControlLabel>
-    <Input size="xl" isInvalid={!!(submitAttempted && errors.idNumber)}>
-      <InputField
-        placeholder="Enter ID number"
-        value={formData.idNumber}
-        onChangeText={(value: string) =>
-          setFormData((prev) => ({ ...prev, idNumber: value }))
-        }
-      />
-    </Input>
-    {submitAttempted && errors.idNumber && (
-      <FormControlError>
-        <Text className="text-error">{errors.idNumber}</Text>
-      </FormControlError>
-    )}
-  </FormControl>
-</VStack> 
-</HStack >
+      <VStack style={{ flex: 1, gap: 8 }}>
+        <FormControlLabel>
+          <FormControlLabelText style={{ color: '#334155', fontSize: 16, fontWeight: '600', marginBottom: 2 }}>
+            ID Number*
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{ 
+            borderColor: submitAttempted && errors.idNumber ? '#EF4444' : '#CBD5E1',
+            borderWidth: 1,
+            borderRadius: 8,
+            backgroundColor: '#F8FAFC',
+            height: 40
+          }}
+        >
+          <InputField
+            placeholder="Enter ID number"
+            value={formData.idNumber}
+            onChangeText={(value: string) =>
+              setFormData((prev) => ({ ...prev, idNumber: value }))
+            }
+            style={{ fontSize: 16, color: '#334155', paddingLeft: 12 }}
+          />
+        </Input>
+        {submitAttempted && errors.idNumber && (
+          <Text style={{ color: '#EF4444', fontSize: 14 }}>{errors.idNumber}</Text>
+        )}
+      </VStack>
+    </HStack>
+  </VStack>
 </Card>
 
-<Card size="sm" variant="filled" className="">
-  <Heading size="md" className="">
+<Card 
+  size="sm" 
+  style={{
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginVertical: 8
+  }}
+>
+  <Heading 
+    size="md" 
+    style={{ 
+      color: '#1E293B',
+      marginBottom: 20,
+      fontSize: 18,
+      fontWeight: '700'
+    }}
+  >
     Location
   </Heading>
 
-  <FormControlLabel>
-          <FormControlLabelText>Electoral Area</FormControlLabelText>
-        </FormControlLabel>
-        <Select
-  selectedValue={formData.electoralArea}
-  onValueChange={handleElectoralAreaChange}
->
-          <SelectTrigger>
-            <SelectInput placeholder="Select Electoral Area" />
-          </SelectTrigger>
-          <SelectPortal>
-            <SelectBackdrop />
-            <SelectContent>
-              <SelectDragIndicatorWrapper>
-                <SelectDragIndicator />
-              </SelectDragIndicatorWrapper>
-              {municipalities?.map((municipality: any) => (
-                
-                <SelectItem 
-                  key={municipality.id} 
-                  label={municipality.municipalities} 
-                  value={municipality.municipalities} 
-                />
-              ))}
-            </SelectContent>
-          </SelectPortal>
-        </Select>
-
-        <FormControlLabel>
-        <FormControlLabelText>Locality</FormControlLabelText>
-      </FormControlLabel>
-      <Select
-        selectedValue={formData.locality}
-        onValueChange={(value) => setFormData(prev => ({ ...prev, locality: value }))}
-        isDisabled={!formData.electoralArea}
-      >
-        <SelectTrigger>
-          <SelectInput placeholder="Select Locality" />
-          <ChevronDownIcon className="mr-3" />
-        </SelectTrigger>
-        <SelectPortal>
-          <SelectBackdrop />
-          <SelectContent>
-            <SelectDragIndicatorWrapper>
-              <SelectDragIndicator />
-            </SelectDragIndicatorWrapper>
-            {localities?.map((locality: any) => (
-              <SelectItem 
-                key={locality.id} 
-                label={locality.name} 
-                value={locality.id.toString()} 
-              />
-            ))}
-          </SelectContent>
-        </SelectPortal>
-      </Select>
-        
-      <VStack className="space-y-2">
-  <FormControlLabel>
-    <FormControlLabelText>Geolocation*</FormControlLabelText>
-  </FormControlLabel>
-
-  <HStack className="items-center space-x-2">
-    <Button
-      variant="outline"
-      size="sm"
-      isDisabled={isLocating}
-      onPress={async () => {
-        try {
-          setIsLocating(true);
-          setLocationError(null);
-
-          const hasPermission = await requestLocationPermission();
-          if (!hasPermission) {
-            setLocationError('Location permission denied');
-            return;
-          }
-
-          const locationSubscription = await Location.watchPositionAsync(
-            {
-              accuracy: Location.Accuracy.High,
-              timeInterval: 1000,
-              distanceInterval: 1,
-            },
-            (location) => {
-              setFormData((prev) => ({
-                ...prev,
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-                accuracy: location.coords.accuracy,
-                geolocation: `${location.coords.latitude}, ${location.coords.longitude}`,
-              }));
-
-              if (location.coords?.accuracy && location.coords.accuracy <= 4) {
-                locationSubscription.remove();
-                setIsLocating(false);
-              }
-            }
-          );
-        } catch (error) {
-          setLocationError('Unable to get location');
-          console.error(error);
-        }
-      }}
-    >
-      <FontAwesome5 name="map-marker-alt" size={24} color={isLocating ? "blue" : "black"} />
-      <ButtonText>{isLocating ? 'Getting location...' : 'Get Location'}</ButtonText>
-    </Button>
-
-    <Input
-      className="flex-1"
-      isDisabled
-      size="md"
-    >
-      <InputField
-        value={formData.geolocation}
-        placeholder="Tap button to get location"
-      />
-    </Input>
-  </HStack>
-
-  {locationError && (
-    <Text className="text-red-500">{locationError}</Text>
-  )}
-
-  {formData.accuracy && (
-    <Text
-      className={formData.accuracy <= 4 ? "text-green-600" : "text-red-600"}
-    >
-      Accuracy: {formData.accuracy.toFixed(2)}m
-    </Text>
-  )}
-</VStack>
-<HStack className="items-center space-x-2 gap-2">
-<VStack className="space-y-2 flex-1">
-  <FormControlLabel>
-    <FormControlLabelText>Street Name*</FormControlLabelText>
-  </FormControlLabel>
-  <Input className=""
-         size="xl"
-         isInvalid={!!(submitAttempted && errors.streetName)}
-         >
-         <InputField
-           value={formData.streetName}
-           onChangeText={(text:string) => setFormData(prev => ({...prev, streetName: text}))}
-          />
-        </Input> 
-</VStack>
-<VStack className="space-y-2">
-  <FormControlLabel>
-    <FormControlLabelText>Valuation Number*</FormControlLabelText>
-  </FormControlLabel>
-  <Input className=""
-         size="xl"
-         isInvalid={!!(submitAttempted && errors.valuationNo)}
-         >
-         <InputField
-           value={formData.valuationNo}
-           onChangeText={(text:string) => setFormData(prev => ({...prev, valuationNo: text}))}
-          />
-        </Input> 
-</VStack>
-</HStack> 
-</Card>
-
-<Card size="sm" variant="filled" className="">
-  <Heading size="md" className="">
-    Data Information
-  </Heading> 
-<HStack className='space-x-2 gap-2'>
-  <VStack className="space-y-2 flex-1">
-  <FormControlLabel>
-    <FormControlLabelText>Data Type*</FormControlLabelText>
-  </FormControlLabel>
-  <Select
-    selectedValue={formData.dataType}
-    onValueChange={(value) =>
-      setFormData((prev) => ({
-        ...prev,
-        dataType: value,
-        dataParticular: value === 'business' ? 'business' : '',
-      }))
-    }
-  >
-    <SelectTrigger>
-      <SelectInput placeholder="Select data type" />
-      <ChevronDownIcon className="mr-3" />
-    </SelectTrigger>
-    <SelectPortal>
-      <SelectBackdrop />
-      <SelectContent>
-        <SelectItem label="Property" value="property" />
-        <SelectItem label="Business" value="business" />
-      </SelectContent>
-    </SelectPortal>
-  </Select>
-</VStack>
-
-<VStack className="space-y-2 flex-1">
-  <FormControlLabel>
-    <FormControlLabelText>Data Particular</FormControlLabelText>
-  </FormControlLabel>
-  {formData.dataType === 'property' ? (
+  <VStack space="md">
+    <FormControlLabel>
+      <FormControlLabelText style={{ color: '#334155', fontSize: 16, fontWeight: '600', marginBottom: 2 }}>
+        Electoral Area*
+      </FormControlLabelText>
+    </FormControlLabel>
     <Select
-      selectedValue={formData.dataParticular}
-      onValueChange={(value) =>
-        setFormData((prev) => ({ ...prev, dataParticular: value }))
-      }
+      selectedValue={formData.electoralArea}
+      onValueChange={handleElectoralAreaChange}
     >
-      <SelectTrigger>
-        <SelectInput placeholder="Select property type" />
-        <ChevronDownIcon className="mr-3" />
+      <SelectTrigger 
+        style={{ 
+          borderColor: '#CBD5E1', 
+          borderWidth: 1,
+          borderRadius: 8,
+          backgroundColor: '#F8FAFC',
+          height: 40
+        }}
+      >
+        <SelectInput 
+          placeholder="Select Electoral Area"
+          style={{ fontSize: 16, color: '#334155', paddingLeft: 12 }}
+        />
       </SelectTrigger>
       <SelectPortal>
         <SelectBackdrop />
         <SelectContent>
-          <SelectItem label="Residential" value="residential" />
-          <SelectItem label="Commercial" value="commercial" />
-          <SelectItem label="Mixed Use" value="mixed" />
+          {municipalities?.map((municipality: any) => (
+            <SelectItem 
+              key={municipality.id} 
+              label={municipality.municipalities} 
+              value={municipality.municipalities} 
+            />
+          ))}
         </SelectContent>
       </SelectPortal>
     </Select>
-  ) : (
-    <Input isDisabled>
-      <InputField value="business" />
-    </Input>
-  )}
-</VStack>
-</HStack>
 
+    <FormControlLabel>
+      <FormControlLabelText style={{ color: '#334155', fontSize: 16, fontWeight: '600', marginBottom: 2 }}>
+        Locality*
+      </FormControlLabelText>
+    </FormControlLabel>
+    <Select
+      selectedValue={formData.locality}
+      onValueChange={(value) => setFormData(prev => ({ ...prev, locality: value }))}
+      isDisabled={!formData.electoralArea}
+    >
+      <SelectTrigger 
+        style={{ 
+          borderColor: '#CBD5E1', 
+          borderWidth: 1,
+          borderRadius: 8,
+          backgroundColor: !formData.electoralArea ? '#F1F5F9' : '#F8FAFC',
+          height: 40
+        }}
+      >
+        <SelectInput 
+          placeholder="Select Locality"
+          style={{ fontSize: 16, color: '#334155', paddingLeft: 12 }}
+        />
+        <ChevronDownIcon style={{ marginRight: 12 }} color="#64748B" />
+      </SelectTrigger>
+      <SelectPortal>
+        <SelectBackdrop />
+        <SelectContent>
+          {localities?.map((locality: any) => (
+            <SelectItem 
+              key={locality.id} 
+              label={locality.name} 
+              value={locality.id.toString()} 
+            />
+          ))}
+        </SelectContent>
+      </SelectPortal>
+    </Select>
 
-  </Card>
+    <VStack space="md">
+      <FormControlLabel>
+        <FormControlLabelText style={{ color: '#334155', fontSize: 16, fontWeight: '600', marginBottom: 2 }}>
+          Geolocation*
+        </FormControlLabelText>
+      </FormControlLabel>
+
+      <HStack space="md" style={{ alignItems: 'center' }}>
+        <Button
+          variant="outline"
+          size="lg"
+          isDisabled={isLocating}
+          style={{
+            borderColor: '#CBD5E1',
+            borderRadius: 8,
+            backgroundColor: isLocating ? '#EEF2FF' : '#F8FAFC'
+          }}
+          onPress={async () => {
+            try {
+              setIsLocating(true);
+              setLocationError(null);
+
+              const hasPermission = await requestLocationPermission();
+              if (!hasPermission) {
+                setLocationError('Location permission denied');
+                return;
+              }
+
+              const locationSubscription = await Location.watchPositionAsync(
+                {
+                  accuracy: Location.Accuracy.High,
+                  timeInterval: 1000,
+                  distanceInterval: 1,
+                },
+                (location) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                    accuracy: location.coords.accuracy,
+                    geolocation: `${location.coords.latitude}, ${location.coords.longitude}`,
+                  }));
+
+                  if (location.coords?.accuracy && location.coords.accuracy <= 4) {
+                    locationSubscription.remove();
+                    setIsLocating(false);
+                  }
+                }
+              );
+            } catch (error) {
+              setLocationError('Unable to get location');
+              console.error(error);
+            }
+          }}
+        >
+          <FontAwesome5 
+            name="map-marker-alt" 
+            size={20} 
+            color={isLocating ? "#2563EB" : "#64748B"} 
+          />
+          <ButtonText style={{ color: isLocating ? '#2563EB' : '#64748B', marginLeft: 8 }}>
+            {isLocating ? 'Getting location...' : 'Get Location'}
+          </ButtonText>
+        </Button>
+
+        <Input
+          style={{ 
+            flex: 1,
+            backgroundColor: '#F1F5F9',
+            borderColor: '#CBD5E1',
+            borderWidth: 1,
+            borderRadius: 8,
+            height: 40
+          }}
+          isDisabled
+        >
+          <InputField
+            value={formData.geolocation}
+            placeholder="Tap button to get location"
+            style={{ color: '#64748B', fontSize: 16, paddingLeft: 12 }}
+          />
+        </Input>
+      </HStack>
+
+      {locationError && (
+        <Text style={{ color: '#EF4444', fontSize: 14 }}>{locationError}</Text>
+      )}
+
+      {formData.accuracy && (
+        <Text
+          style={{ 
+            color: formData.accuracy <= 4 ? '#10B981' : '#EF4444',
+            fontSize: 14
+          }}
+        >
+          Accuracy: {formData.accuracy.toFixed(2)}m
+        </Text>
+      )}
+    </VStack>
+
+    <HStack space="md" style={{ marginTop: 8 }}>
+      <VStack style={{ flex: 1 }}>
+        <FormControlLabel>
+          <FormControlLabelText style={{ color: '#334155', fontSize: 16, fontWeight: '600', marginBottom: 2 }}>
+            Street Name*
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{ 
+            borderColor: '#CBD5E1',
+            borderWidth: 1,
+            borderRadius: 8,
+            backgroundColor: '#F8FAFC',
+            height: 40
+          }}
+          isInvalid={!!(submitAttempted && errors.streetName)}
+        >
+          <InputField
+            value={formData.streetName}
+            onChangeText={(text:string) => setFormData(prev => ({...prev, streetName: text}))}
+            style={{ fontSize: 16, color: '#334155', paddingLeft: 12 }}
+          />
+        </Input>
+      </VStack>
+
+      <VStack style={{ flex: 1 }}>
+        <FormControlLabel>
+          <FormControlLabelText style={{ color: '#334155', fontSize: 16, fontWeight: '600', marginBottom: 2 }}>
+            Valuation Number*
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{ 
+            borderColor: '#CBD5E1',
+            borderWidth: 1,
+            borderRadius: 8,
+            backgroundColor: '#F8FAFC',
+            height: 40
+          }}
+          isInvalid={!!(submitAttempted && errors.valuationNo)}
+        >
+          <InputField
+            value={formData.valuationNo}
+            onChangeText={(text:string) => setFormData(prev => ({...prev, valuationNo: text}))}
+            style={{ fontSize: 16, color: '#334155', paddingLeft: 12 }}
+          />
+        </Input>
+      </VStack>
+    </HStack>
+  </VStack>
+</Card>
+
+<Card 
+  size="sm" 
+  style={{
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginVertical: 8
+  }}
+>
+  <Heading 
+    size="md" 
+    style={{ 
+      color: '#1E293B',
+      marginBottom: 20,
+      fontSize: 18,
+      fontWeight: '700'
+    }}
+  >
+    Data Information
+  </Heading> 
+  <HStack space="md" style={{ alignItems: 'flex-start' }}>
+    <VStack style={{ flex: 1, gap: 12 }}>
+      <FormControlLabel>
+        <FormControlLabelText 
+          style={{ 
+            color: '#334155', 
+            fontSize: 16,
+            fontWeight: '600',
+            marginBottom: 2
+          }}
+        >
+          Data Type*
+        </FormControlLabelText>
+      </FormControlLabel>
+      <Select
+        selectedValue={formData.dataType}
+        onValueChange={(value) =>
+          setFormData((prev) => ({
+            ...prev,
+            dataType: value,
+            dataParticular: value === 'business' ? 'business' : '',
+          }))
+        }
+      >
+        <SelectTrigger 
+          style={{ 
+            borderColor: '#CBD5E1', 
+            borderWidth: 1,
+            borderRadius: 8,
+            backgroundColor: '#F8FAFC',
+            height: 40
+          }}
+        >
+          <SelectInput 
+            placeholder="Select data type"
+            style={{ 
+              fontSize: 16,
+              color: '#334155',
+              paddingLeft: 12
+            }}
+          />
+          <ChevronDownIcon style={{ marginRight: 12 }} color="#64748B" />
+        </SelectTrigger>
+        <SelectPortal>
+          <SelectBackdrop />
+          <SelectContent>
+            <SelectItem label="Property" value="property" />
+            <SelectItem label="Business" value="business" />
+          </SelectContent>
+        </SelectPortal>
+      </Select>
+    </VStack>
+
+    <VStack style={{ flex: 1, gap: 12 }}>
+      <FormControlLabel>
+        <FormControlLabelText 
+          style={{ 
+            color: '#334155', 
+            fontSize: 16,
+            fontWeight: '600',
+            marginBottom: 2
+          }}
+        >
+          Data Particular
+        </FormControlLabelText>
+      </FormControlLabel>
+      {formData.dataType === 'property' ? (
+        <Select
+          selectedValue={formData.dataParticular}
+          onValueChange={(value) =>
+            setFormData((prev) => ({ ...prev, dataParticular: value }))
+          }
+        >
+          <SelectTrigger 
+            style={{ 
+              borderColor: '#CBD5E1', 
+              borderWidth: 1,
+              borderRadius: 8,
+              backgroundColor: '#F8FAFC',
+              height: 40
+            }}
+          >
+            <SelectInput 
+              placeholder="Select property type"
+              style={{ 
+                fontSize: 16,
+                color: '#334155',
+                paddingLeft: 12
+              }}
+            />
+            <ChevronDownIcon style={{ marginRight: 12 }} color="#64748B" />
+          </SelectTrigger>
+          <SelectPortal>
+            <SelectBackdrop />
+            <SelectContent>
+              <SelectItem label="Residential" value="residential" />
+              <SelectItem label="Commercial" value="commercial" />
+              <SelectItem label="Mixed Use" value="mixed" />
+            </SelectContent>
+          </SelectPortal>
+        </Select>
+      ) : (
+        <Input 
+          isDisabled
+          style={{ 
+            backgroundColor: '#F1F5F9',
+            borderRadius: 8,
+            height: 40,
+            borderColor: '#CBD5E1',
+            borderWidth: 1
+          }}
+        >
+          <InputField 
+            value="business"
+            style={{ 
+              color: '#64748B',
+              fontSize: 16,
+              paddingLeft: 12
+            }}
+          />
+        </Input>
+      )}
+    </VStack>
+  </HStack>
+</Card>
 
   {/* <Alert action="error" className="gap-3">
   
@@ -546,15 +812,38 @@ console.log(municipalities);
   </AlertText>
 </Alert> */}
 
-<VStack className="space-y-4">
+<VStack space="md" style={{ marginVertical: 16 }}>
   <TouchableOpacity
-    className="w-full"
-    onPress={() => {
-      setSubmitAttempted(true);
+    style={{
+      backgroundColor: withinRange ? '#2563EB' : '#94A3B8',
+      paddingVertical: 16,
+      paddingHorizontal: 24,
+      borderRadius: 12,
+      alignItems: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3
     }}
+    onPress={handleSubmit}
     disabled={!withinRange}
+    activeOpacity={0.8}
   >
-    <Text>{withinRange ? 'Save' : 'Get Location Within 4m Range To Save'}</Text>
+    <HStack space="sm" style={{ alignItems: 'center' }}>
+      {withinRange ? (
+        <Icon as={SaveIcon} size="md" color="white" />
+      ) : (
+        <Icon as={MapPinIcon} size="md" color="white" />
+      )}
+      <Text style={{ 
+        color: 'white', 
+        fontSize: 16, 
+        fontWeight: '600' 
+      }}>
+        {withinRange ? 'Save Data' : 'Get Location Within 4m Range'}
+      </Text>
+    </HStack>
   </TouchableOpacity>
 </VStack>
 
@@ -574,7 +863,7 @@ const styles = StyleSheet.create({
   },
   stepContainer: {
     gap: 8,
-    marginBottom: 8,
+    marginBottom: 2,
   },
   reactLogo: {
     height: 178,
