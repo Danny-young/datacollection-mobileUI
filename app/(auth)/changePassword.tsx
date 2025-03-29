@@ -14,6 +14,10 @@ import { HStack } from '@/components/ui/hstack';
 import { useMutation } from '@tanstack/react-query';
 import { changePassword } from '@/api/auth';
 import { router } from 'expo-router';
+import { Heading } from '@/components/ui/heading';
+import { showCustomToast } from '@/components/ui/custom-toast';
+import { Spinner } from '@/components/ui/spinner';
+
 
 export default function ChangePassword() {
   const [showOldPassword, setShowOldPassword] = useState(false);
@@ -43,90 +47,189 @@ export default function ChangePassword() {
       formData.newPassword
     ),
     onSuccess: () => {
-      toast.show({
-        // title: 'Success',
-        // description: 'Password changed successfully!',
-        // variant: 'success',
-      });
+        showCustomToast(toast, {
+        title: 'Success',
+        description: 'Password changed successfully!',
+        variant: 'success',
+        });      
       setFormData({ user_name: '', oldPassword: '', newPassword: '' });
-      router.replace('/login'); // Redirect to login after success
+      router.replace('/login');
     },
     onError: (error) => {
-      toast.show({
-        // title: 'Error',
-        // description: error?.message || 'Failed to change password. Please try again.',
-        // variant: 'error',
-      });
+        showCustomToast(toast, {
+        title: 'Error',
+        description: error?.message || 'Failed to change password. Please try again.',
+        variant: 'error',
+        });
     },
   });
 
-  const handleSubmit = () => {
-    changePasswordMutation.mutate();
-  };
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <VStack className="w-full max-w-[300px] rounded-md border border-background-200 p-4">
-        <FormControl>
+    <View style={{ 
+      flex: 1, 
+      justifyContent: 'center', 
+      alignItems: 'center',
+      backgroundColor: '#F8FAFC',
+      padding: 16 
+    }}>
+      <VStack 
+        style={{ 
+          width: '100%',
+          maxWidth: 400,
+          backgroundColor: 'white',
+          borderRadius: 16,
+          padding: 24,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3
+        }}
+      >
+        <Heading 
+          size="2xl" 
+          style={{ 
+            textAlign: 'center',
+            marginBottom: 24,
+            color: '#1E293B'
+          }}
+        >
+          Change Password
+        </Heading>
+
+        <FormControl style={{ marginBottom: 16 }}>
           <FormControlLabel>
-            <FormControlLabelText>Agent Code</FormControlLabelText>
+            <FormControlLabelText style={{ color: '#475569', fontWeight: '600' }}>
+              Agent Code
+            </FormControlLabelText>
           </FormControlLabel>
-          <Input size="xl" className="my-1">
+          <Input 
+            size="xl" 
+            style={{
+              borderColor: '#CBD5E1',
+              borderWidth: 1,
+              borderRadius: 8,
+              backgroundColor: '#F8FAFC',
+              marginTop: 4
+            }}
+          >
             <InputField
-              type="text"
               placeholder="Enter your Agent Code"
               value={formData.user_name}
               onChangeText={(text: string) => handleChange('user_name', text)}
+              style={{ fontSize: 16, color: '#334155' }}
             />
           </Input>
+        </FormControl>
 
+        <FormControl style={{ marginBottom: 16 }}>
           <FormControlLabel>
-            <FormControlLabelText>Old Password</FormControlLabelText>
+            <FormControlLabelText style={{ color: '#475569', fontWeight: '600' }}>
+              Old Password
+            </FormControlLabelText>
           </FormControlLabel>
-          <Input size="xl" className="my-1">
+          <Input 
+            size="xl"
+            style={{
+              borderColor: '#CBD5E1',
+              borderWidth: 1,
+              borderRadius: 8,
+              backgroundColor: '#F8FAFC',
+              marginTop: 4
+            }}
+          >
             <InputField
               type={showOldPassword ? 'text' : 'password'}
               placeholder="Enter old password"
               value={formData.oldPassword}
               onChangeText={(text: string) => handleChange('oldPassword', text)}
+              style={{ fontSize: 16, color: '#334155' }}
             />
-            <InputSlot className="p-3" onPress={handleToggleOldPassword}>
-              <InputIcon as={showOldPassword ? EyeIcon : EyeOffIcon} className="text-darkBlue-500" />
+            <InputSlot onPress={handleToggleOldPassword}>
+              <InputIcon 
+                as={showOldPassword ? EyeIcon : EyeOffIcon} 
+                color="#64748B"
+              />
             </InputSlot>
           </Input>
+        </FormControl>
 
+        <FormControl style={{ marginBottom: 24 }}>
           <FormControlLabel>
-            <FormControlLabelText>New Password</FormControlLabelText>
+            <FormControlLabelText style={{ color: '#475569', fontWeight: '600' }}>
+              New Password
+            </FormControlLabelText>
           </FormControlLabel>
-          <Input size="xl" className="my-1">
+          <Input 
+            size="xl"
+            style={{
+              borderColor: '#CBD5E1',
+              borderWidth: 1,
+              borderRadius: 8,
+              backgroundColor: '#F8FAFC',
+              marginTop: 4
+            }}
+          >
             <InputField
               type={showNewPassword ? 'text' : 'password'}
               placeholder="Enter new password"
               value={formData.newPassword}
               onChangeText={(text: string) => handleChange('newPassword', text)}
+              style={{ fontSize: 16, color: '#334155' }}
             />
-            <InputSlot className="p-3" onPress={handleToggleNewPassword}>
-              <InputIcon as={showNewPassword ? EyeIcon : EyeOffIcon} className="text-darkBlue-500" />
+            <InputSlot onPress={handleToggleNewPassword}>
+              <InputIcon 
+                as={showNewPassword ? EyeIcon : EyeOffIcon} 
+                color="#64748B"
+              />
             </InputSlot>
           </Input>
         </FormControl>
 
-        <HStack className="flex gap-5 mt-4">
-          <Button
-            className="flex-1 w-fit self-end mt-4"
-            size="sm"
+        <HStack space="md" style={{ justifyContent: 'space-between' }}>
+          {/* <Button
+            size="lg"
             variant="outline"
+            style={{
+              flex: 1,
+              borderColor: '#2563EB',
+              borderRadius: 8,
+              height: 48,
+            }}
             onPress={() => router.push('/forgot-password')}
           >
-            <ButtonText>Forgot Password?</ButtonText>
-          </Button>
+            <ButtonText style={{ 
+              color: '#2563EB', 
+              fontSize: 16,
+              textAlign: 'center'
+            }}>
+              Forgot Password?
+            </ButtonText>
+          </Button> */}
           <Button
-            className="flex-1 w-fit self-end mt-4"
-            size="sm"
-            onPress={handleSubmit}
-           // isLoading={changePasswordMutation.isLoading}
+            size="lg"
+            style={{
+              flex: 1,
+              backgroundColor: '#2563EB',
+              borderRadius: 8,
+              height: 48,
+            }}
+            onPress={() => changePasswordMutation.mutate()}
+            disabled={changePasswordMutation.isPending}
           >
-            <ButtonText>Change Password</ButtonText>
+            <HStack space="sm" style={{ alignItems: 'center' }}>
+              {changePasswordMutation.isPending && (
+                <Spinner size="small" color="white" />
+              )}
+              <ButtonText style={{ 
+                fontSize: 16, 
+                fontWeight: '600',
+                color: 'white'
+              }}>
+                {changePasswordMutation.isPending ? 'Changing...' : 'Change Password'}
+              </ButtonText>
+            </HStack>
           </Button>
         </HStack>
       </VStack>

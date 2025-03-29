@@ -31,32 +31,26 @@ import { Text } from "@/components/ui/text"
 import { Box } from '@/components/ui/box';
 
 import { useToast } from '@/components/ui/toast';
-import { individualAgent } from '@/api/agents';
-// import { 
-//   UserIcon,
-//   PhoneIcon,
-//   MailIcon,
-//   BuildingIcon,
-//   MapPinIcon,
-//   PenIcon,
-//   PersonIcon,
-//   EmailIcon 
-// } from '@/components/ui/icon';
+import { AgentbyID, updateAgent, UpdateAgentData } from '@/api/agents';
 import { Heading } from '@/components/ui/heading';
 import { AddIcon, Icon } from '@/components/ui/icon';
 import { LogOut, MailIcon, MailsIcon, PhoneIcon, ShoppingCart, UserCheck2 } from 'lucide-react-native';
+import { router } from 'expo-router';
+import { showCustomToast } from '@/components/ui/custom-toast';
+import { useQueryClient } from '@tanstack/react-query';
+import { Spinner } from '@/components/ui/spinner';
 
-interface UserProfile {
-  agentCode: string;
-  fullName: string;
+
+
+
+interface EditableProfile {
+  name: string;
   email: string;
-  phone: string;
-  department: string;
-  location: string;
-  role: string;
-  avatarUrl?: string;
-  joinDate: string;
+  phone_number: string;
 }
+
+
+
 
 interface ProfileItemProps {
   icon: React.ReactNode;
@@ -65,6 +59,9 @@ interface ProfileItemProps {
   isEditing?: boolean;
   onEdit?: (value: string) => void;
 }
+
+
+
 
 
 const ProfileItem = ({ icon, label, value, isEditing, onEdit }: ProfileItemProps) => (
@@ -92,50 +89,113 @@ const ProfileItem = ({ icon, label, value, isEditing, onEdit }: ProfileItemProps
   </HStack>
 );
 
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const day = date.getDate();
+  const month = date.toLocaleString('en-US', { month: 'long' });
+  const year = date.getFullYear();
+  const suffix = ['th', 'st', 'nd', 'rd'][(day % 10 > 3 ? 0 : day % 10)];
+  return `${day}${suffix} ${month} ${year}`;
+};
 
 export default function userprofile() {
+  const user = useAuth((state:any) => state.user);
+  console.log("1. Initial user state:", user);
+  console.log("2. User type:", typeof user);
+  console.log("3. User properties:", Object.keys(user || {}));
+  console.log("3.5 Full user object:", JSON.stringify(user, null, 2));
 
+  const logout = useAuth((state:any) => state.logout);
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState<UserProfile | null>(null);
+  const [profileData, setProfileData] = useState<EditableProfile>({
+    name: user?.name || '',
+    email: user?.email || '',
+    phone_number: user?.phone_number || ''
+  });
   //const { user } = useAuth();
   const toast = useToast();
-  console.log(individualAgent)
-    // Fetch user profile data
-  //  const { data: profile, isLoading } = useQuery({
-  //  queryKey: ['userProfile', user?.username],
-  //  queryFn: individualAgent() ,
-  //   onSuccess: () => {
-  //     setIsEditing(false);
-  //     toast.show({
-  //       title: "Success",
-  //       description: "Profile updated successfully!",
-  //       variant: "success",
-  //     });
-  //   }
-  //   onError: (error) => {
-  //     toast.show({
-  //       title: "Error",
-  //       description: error.message || "Failed to update profile",
-  //       variant: "error",
-  //     });
-  //   },
-  // });
+  const queryClient = useQueryClient();
+ 
+
+ // Fetch agent data using user's username
+ const { data: agentData, isLoading, error } = useQuery({
+  queryKey: ['agent', user?.user_name],
+  queryFn: async () => {
+    if (!user?.user_name) {
+      console.log("4. No user_name found in user object:", user);
+      throw new Error('No user_name found');
+    }
+    
+    console.log("5. Attempting to fetch agent with user_name:", user.user_name);
+    try {
+      const response = await AgentbyID(user.user_name);
+      console.log("6. API Response:", response);
+      return response;
+    } catch (err) { 
+      console.error("7. API Error:", err);
+      throw err;
+    }
+  },
+  enabled: Boolean(user?.user_name), // More explicit boolean check
+});
+
+console.log("9. Is query enabled?", Boolean(user?.user_name));
+console.log("10. Query state:", {
+  isLoading,
+  error,
+  hasData: !!agentData,
+  data: agentData
+});
+
+const updateProfileMutation = useMutation({
+  mutationFn: (data: UpdateAgentData) => updateAgent(user?.user_name!, data),
+  onSuccess: () => {
+    setIsEditing(false);
+    // Refetch agent data
+    queryClient.invalidateQueries({ queryKey: ['agent', user?.user_name] });
+    showCustomToast(toast, {
+      title: "Success",
+      description: "Profile updated successfully",
+      variant: "success"
+    });
+  },
+  onError: (error: Error) => {
+    showCustomToast(toast, {
+      title: "Error",
+      description: error.message || "Failed to update profile",
+      variant: "error"
+    });
+  }
+});
 
   // const handleUpdate = () => {
-  //   if (individualAgent) {
+  //   if (AgentbyID) {
   //     updateProfileMutation.mutate(profileData);
   //   }
   // };
 
-  // if (isLoading) {
-  //   return (
-  //     <View className="flex-1 justify-center items-center">
-  //       <Text>Loading profile...</Text>
-  //     </View>
-  //   );
-  // }
+  // Show loading state
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Loading profile...</Text>
+      </View>
+    );
+  }
+ console.log("Current user in profile:", user);
 
-  if (!individualAgent) {
+
+ const handleLogout = () => {
+  logout(); // Clear user state
+  router.replace('/login'); // Redirect to login
+  showCustomToast(toast, {
+      title: "Logged Out",
+      description: "You have been successfully logged out",
+      variant: "info"
+        });
+};
+
+  if (!AgentbyID) {
     return (
       <View className="flex-1 justify-center items-center">
         <Text>No profile data available</Text>
@@ -170,7 +230,8 @@ export default function userprofile() {
               marginBottom: 4
             }}
           >
-            Michael Davidson
+         
+            <Text className='text-4xl'>{agentData?.name}</Text>
           </Heading>
           <HStack 
             style={{
@@ -189,7 +250,7 @@ export default function userprofile() {
                 fontWeight: '600'
               }}
             >
-              Agent030
+              {agentData?.user_name}
             </Text>
           </HStack>
           <Button
@@ -228,7 +289,7 @@ export default function userprofile() {
         </Box>
         <VStack>
           <Text className="text-gray-500 text-sm">Phone Number</Text>
-          <Text className="text-gray-800 text-lg font-medium">054 800 7154</Text>
+          <Text className="text-gray-800 text-lg font-medium">{agentData?.phone_number}</Text>
         </VStack>
       </HStack>
 
@@ -238,7 +299,7 @@ export default function userprofile() {
         </Box>
         <VStack>
           <Text className="text-gray-500 text-sm">Email Address</Text>
-          <Text className="text-gray-800 text-lg font-medium">michael2000@gmail.com</Text>
+          <Text className="text-gray-800 text-lg font-medium">{agentData?.email}</Text>
         </VStack>
       </HStack>
     </VStack>
@@ -366,7 +427,7 @@ export default function userprofile() {
             }}
           >
             <Text style={{ color: '#4F46E5', fontSize: 16, fontWeight: '600' }}>
-              Agent
+            {agentData?.role}
             </Text>
           </HStack>
         </HStack>
@@ -375,10 +436,10 @@ export default function userprofile() {
           style={{
             backgroundColor: '#F0F9FF',
             borderRadius: 12,
-            padding: 5
+            padding: 5,
+            alignItems: 'center', justifyContent: 'space-between'
           }}
-          alignItems="center"
-          justifyContent="space-between"
+        
         >
           <Text style={{ color: '#64748B', fontSize: 16 }}>Agent Since</Text>
           <Text 
@@ -392,7 +453,7 @@ export default function userprofile() {
               borderRadius: 20
             }}
           >
-            23rd December 2023
+            {agentData?.created_at && formatDate(agentData.created_at)}
           </Text>
         </HStack>
       </VStack>
@@ -456,6 +517,78 @@ export default function userprofile() {
         </TouchableOpacity>  
       </Card>
 
+      {isEditing && (
+        <Card className="p-4 bg-white shadow-md rounded-xl mt-4">
+          <VStack space="md">
+            <FormControl>
+              <FormControlLabel>
+                <FormControlLabelText style={{ color: '#475569', fontWeight: '600' }}>Full Name</FormControlLabelText>
+              </FormControlLabel>
+              <Input style={{ borderColor: '#CBD5E1', borderRadius: 8, height: 48 }}>
+                <InputField
+                  value={profileData.name}
+                  onChangeText={(text) => setProfileData(prev => ({ ...prev, name: text }))}
+                  placeholder="Enter your full name"
+                />
+              </Input>
+            </FormControl>
+
+            <FormControl>
+              <FormControlLabel>
+                <FormControlLabelText style={{ color: '#475569', fontWeight: '600' }}>Email</FormControlLabelText>
+              </FormControlLabel>
+              <Input style={{ borderColor: '#CBD5E1', borderRadius: 8, height: 48 }}>
+                <InputField
+                  value={profileData.email}
+                  onChangeText={(text) => setProfileData(prev => ({ ...prev, email: text }))}
+                  placeholder="Enter your email"
+                />
+              </Input>
+            </FormControl>
+
+            <FormControl>
+              <FormControlLabel>
+                <FormControlLabelText style={{ color: '#475569', fontWeight: '600' }}>Phone Number</FormControlLabelText>
+              </FormControlLabel>
+              <Input style={{ borderColor: '#CBD5E1', borderRadius: 8, height: 48 }}>
+                <InputField
+                  value={profileData.phone_number}
+                  onChangeText={(text) => setProfileData(prev => ({ ...prev, phone_number: text }))}
+                  placeholder="Enter your phone number"
+                />
+              </Input>
+            </FormControl>
+
+            <Button
+              size="lg"
+              style={{
+                backgroundColor: '#2563EB',
+                borderRadius: 8,
+                height: 48,
+                marginTop: 8
+              }}
+              onPress={() => {
+                updateProfileMutation.mutate({
+                  name: profileData.name,
+                  email: profileData.email,
+                  phone_number: profileData.phone_number
+                });
+              }}
+              disabled={updateProfileMutation.isPending}
+            >
+              <HStack space="sm" style={{ alignItems: 'center' }}>
+                {updateProfileMutation.isPending && (
+                  <Spinner size="small" color="white" />
+                )}
+                <ButtonText style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
+                  {updateProfileMutation.isPending ? 'Updating...' : 'Save Changes'}
+                </ButtonText>
+              </HStack>
+            </Button>
+          </VStack>
+        </Card>
+      )}
+
       <Card 
         style={{
           backgroundColor: 'white',
@@ -473,6 +606,7 @@ export default function userprofile() {
             overflow: 'hidden'
           }}
           activeOpacity={0.7}
+          onPress={handleLogout}
         >
           <HStack 
             style={{
@@ -508,20 +642,6 @@ export default function userprofile() {
           </HStack>    
         </TouchableOpacity>  
       </Card>
-
-      {isEditing && (
-        <Card>
-          <Button
-            className="w-full"
-            // onPress={handleUpdate}
-            // isDisabled={updateProfileMutation.isPending}
-          >
-            {/* <ButtonText>
-              {updateProfileMutation.isPending ? 'Updating...' : 'Save Changes'}
-            </ButtonText> */}
-          </Button>
-        </Card>
-      )}
     </Card>
   </ScrollView>
 );

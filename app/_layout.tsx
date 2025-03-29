@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 import { useAuth } from '@/store/authStore';
 import 'react-native-reanimated';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '@/context/AuthContext';
 //import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 
 
@@ -32,15 +33,18 @@ export default function RootLayout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-    <GluestackUIProvider mode="system"><Stack>
-    
-        {/* <Stack.Screen name="index" options={{ headerShown: false }} /> */}
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack></GluestackUIProvider>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <GluestackUIProvider mode="system">
+          <Stack>
+            {/* <Stack.Screen name="index" options={{ headerShown: false }} /> */}
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+        </GluestackUIProvider>
       </QueryClientProvider>
+    </AuthProvider>
   );
 }

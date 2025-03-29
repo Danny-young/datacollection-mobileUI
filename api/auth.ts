@@ -36,19 +36,26 @@ export async function register(name: string, email: string, phone_number: string
 
     const data = await res.json();
     
+    // Check for specific error types from the backend
     if (!res.ok) {
+      if (data.error === 'Email already exists') {
+        throw new Error('This email is already registered');
+      }
+      if (data.error === 'Phone number already exists') {
+        throw new Error('This phone number is already registered');
+      }
       throw new Error(data.error || 'Failed to register');
     }
 
-    // Return the data as is from the API
     return {
       message: data.message,
       AgentCode: data.AgentCode,
       temporaryPassword: data.temporaryPassword
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Registration Error:', error);
-    throw error;
+    // Preserve the error message from the backend
+    throw new Error(error.message || 'Registration failed');
   }
 }
 

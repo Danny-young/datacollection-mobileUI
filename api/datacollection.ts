@@ -1,21 +1,50 @@
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-export async function collectiondata() {
+
+import { FormDataType } from '@/app/(tabs)/add';
+// OR from a shared types file:
+// import { FormDataType } from '@/types';
+
+export const collectiondata = async (data: FormDataType) => {
+  try {
+    console.log('Sending data:', data); // Log the data being sent
     const res = await fetch(`${API_URL}/collectedData`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({}),
+      body: JSON.stringify(data),
     });
-  
-    const data = await res.json();
+    
+    const responseData = await res.json();
+    console.log('API Response:', responseData); // Log the API response
+    
     if (!res.ok) {
-      console.log(data);
-      throw Error('Failed to collect data');
+      throw new Error(`API error: ${JSON.stringify(responseData)}`);
     }
-    return data;  
+    
+    return responseData;
+  } catch (error) {
+    console.error('API call failed:', error);
+    throw error;
   }
+};
+// export async function collectiondata() {
+//     const res = await fetch(`${API_URL}/collectedData`, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({}),
+//     });
+  
+//     const data = await res.json();
+//     if (!res.ok) {
+//       console.log(data);
+//       throw Error('Failed to collect data');
+//     }
+//     return data;  
+//   }
 
   export const fetchLocations = async () => {
     try {

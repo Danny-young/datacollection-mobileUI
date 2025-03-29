@@ -8,9 +8,11 @@ import { Heading } from '@/components/ui/heading';
 import { TrendingUpIcon, TrendingDownIcon} from 'lucide-react-native';
 interface MetricCardProps {
   title: string;
-  value: string | number;
-  change: number;
+  value: number;
+  change?: number;
+  suffix?: string;
   icon: React.ReactNode;
+  
 }
 
 export const MetricCard = ({ title, value, change, icon }: MetricCardProps) => (
@@ -33,17 +35,21 @@ export const MetricCard = ({ title, value, change, icon }: MetricCardProps) => (
           {icon}
         </View>
         <HStack style={{ alignItems: 'center' }}>
-          {change >= 0 ? 
-            <TrendingUpIcon size={16} color="#10B981" /> : 
-            <TrendingDownIcon size={16} color="#EF4444" />
-          }
-          <Text style={{ 
-            marginLeft: 4, 
-            color: change >= 0 ? '#10B981' : '#EF4444',
-            fontSize: 14 
-          }}>
-            {Math.abs(change)}%
-          </Text>
+          {change !== undefined && (
+            <>
+              {change >= 0 ? 
+                <TrendingUpIcon size={16} color="#10B981" /> : 
+                <TrendingDownIcon size={16} color="#EF4444" />
+              }
+              <Text style={{ 
+                marginLeft: 4, 
+                color: change >= 0 ? '#10B981' : '#EF4444',
+                fontSize: 14 
+              }}>
+                {Math.abs(change)}%
+              </Text>
+            </>
+          )}
         </HStack>
       </HStack>
       <Text style={{ color: '#64748B', marginTop: 8 }}>{title}</Text>
